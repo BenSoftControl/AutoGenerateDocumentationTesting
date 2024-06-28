@@ -84,8 +84,6 @@ internal class DocumentationAttributeHandling
                     {
                         HandleDocumentation(pfd, str, AttributeType.Property);
                         var subNotes = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name + "Attribute" == nameof(NoteDocumentationAttribute));
-                        //foreach (var subNote in subNotes) // Needs to be placed outside the class
-                        //    HandleDocumentation(subNote, str, AttributeType.Note);
                     }
                 }
             }
@@ -99,8 +97,6 @@ internal class DocumentationAttributeHandling
                     {
                         HandleDocumentation(pfd, str, AttributeType.Field);
                         var subNotes = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name + "Attribute" == nameof(NoteDocumentationAttribute));
-                        //foreach (var subNote in subNotes) // Needs to be placed outside the class
-                        //    HandleDocumentation(subNote, str, AttributeType.Note);
                     }
                 }
             }
@@ -143,21 +139,21 @@ internal class DocumentationAttributeHandling
         str.AppendLine("@enduml");
         File.WriteAllText(filename, str.ToString());
 
-        var proc = new ProcessStartInfo("java", " -jar " + Environment.CurrentDirectory + "\\DocumentationSourceGenerator\\plantuml.jar " + filename);
+        var proc = new ProcessStartInfo("java", @$" -jar {Environment.CurrentDirectory}\\DocumentationSourceGenerator\\plantuml.jar {filename}");
         Process.Start(proc);
         Process cmd = new Process();
         cmd.StartInfo.FileName = "java";
-        cmd.StartInfo.Arguments = " -jar " + "plantuml.jar " + filename;
-        cmd.StartInfo.RedirectStandardInput = true;
-        cmd.StartInfo.RedirectStandardOutput = true;
+        cmd.StartInfo.Arguments = @$" -jar {Environment.CurrentDirectory}\\DocumentationSourceGenerator\\plantuml.jar {filename}";
+        //cmd.StartInfo.RedirectStandardInput = true;
+        //cmd.StartInfo.RedirectStandardOutput = true;
         //cmd.StartInfo.CreateNoWindow = true;
         cmd.StartInfo.UseShellExecute = false;
         cmd.Start();
 
-        cmd.StandardInput.WriteLine(" -jar " + Environment.CurrentDirectory + "\\DocumentationSourceGenerator\\plantuml.jar " + filename);
-        cmd.StandardInput.Flush();
-        cmd.StandardInput.Close();
-        cmd.WaitForExit();
+        //cmd.StandardInput.WriteLine(" -jar " + Environment.CurrentDirectory + "\\DocumentationSourceGenerator\\plantuml.jar " + filename);
+        //cmd.StandardInput.Flush();
+        //cmd.StandardInput.Close();
+        //cmd.WaitForExit();
     }
 
     private void HandleDocumentation(AttributeSyntax attribute, StringBuilder str, AttributeType type)
