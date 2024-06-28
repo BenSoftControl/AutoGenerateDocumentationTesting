@@ -1,0 +1,5 @@
+run the command line and create the uml via a script or cmd line called by C Sharp 
+https://plantuml.com/command-line
+https://plantuml.com/faq-install
+
+information, maybe as notes? 
