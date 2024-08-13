@@ -37,7 +37,7 @@ namespace DocumentationSourceGenerator
                 .ToList();
             var loc = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
-            dah.Test(classes.Concat(enums), loc + "\\" + context.Compilation.AssemblyName + ".txt");
+            dah.Test(classes.Concat(enums), loc + "\\" + context.Compilation.AssemblyName + "UML.txt", loc + "\\" + context.Compilation.AssemblyName + "Doc.txt");
         }
 
         public void Initialize(GeneratorInitializationContext context)
@@ -60,20 +60,21 @@ internal enum AttributeType
 internal class DocumentationAttributeHandling
 {
     private int i;
-    public void Test(IEnumerable<BaseTypeDeclarationSyntax> types, string filename)
+    public void Test(IEnumerable<BaseTypeDeclarationSyntax> types, string filename, string docFileName)
     {
-        StringBuilder str = new StringBuilder("@startuml\n");
+        StringBuilder umlStr = new StringBuilder("@startuml\n");
+        StringBuilder docStr = new StringBuilder();
         //var types = assembly.DefinedTypes;
         var documentations = types.Where(x => x.AttributeLists.Any(xx => xx.Attributes.Any(xxx => xxx.Name.ToString() + "Attribute" == nameof(ContainerDocumentationAttribute))));
         foreach (var documentation in documentations)
         {
             if (documentation is ClassDeclarationSyntax)
-                str.Append("class ");
+                umlStr.Append("class ");
             else if (documentation is EnumDeclarationSyntax)
-                str.Append("enum ");
+                umlStr.Append("enum ");
             var doc = documentation.AttributeLists.SelectMany(x => x.Attributes).First(x => x.Name.ToString() + "Attribute" == nameof(ContainerDocumentationAttribute));
-                HandleDocumentation(doc, str, AttributeType.Container);
-            str.AppendLine("{");
+                HandleDocumentation(doc, umlStr, docStr, AttributeType.Container);
+            umlStr.AppendLine("{");
             if(documentation is ClassDeclarationSyntax clDoc)
             {
                 var members = clDoc.Members;
@@ -82,7 +83,7 @@ internal class DocumentationAttributeHandling
                     var pfd = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name.ToString() + "Attribute" == nameof(PropertyFieldDocumentationAttribute)).FirstOrDefault();
                     if(pfd != null)
                     {
-                        HandleDocumentation(pfd, str, AttributeType.Property);
+                        HandleDocumentation(pfd, umlStr, docStr, AttributeType.Property);
                         var subNotes = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name + "Attribute" == nameof(NoteDocumentationAttribute));
                     }
                 }
@@ -95,18 +96,18 @@ internal class DocumentationAttributeHandling
                     var pfd = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name.ToString() + "Attribute" == nameof(PropertyFieldDocumentationAttribute)).FirstOrDefault();
                     if(pfd != null)
                     {
-                        HandleDocumentation(pfd, str, AttributeType.Field);
+                        HandleDocumentation(pfd, umlStr, docStr, AttributeType.Field);
                         var subNotes = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name + "Attribute" == nameof(NoteDocumentationAttribute));
                     }
                 }
             }
-            str.AppendLine("}");
+            umlStr.AppendLine("}");
             var notes = documentation.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name.ToString() + "Attribute" == nameof(NoteDocumentationAttribute));
             foreach (var note in notes)
-                HandleDocumentation(note, str, AttributeType.Note);
+                HandleDocumentation(note, umlStr, docStr, AttributeType.Note);
             var relations = documentation.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name.ToString() + "Attribute" == nameof(RelationDocumentationAttribute));
             foreach (var relation in relations)
-                HandleDocumentation(relation, str, AttributeType.Relation);
+                HandleDocumentation(relation, umlStr, docStr, AttributeType.Relation);
             if (documentation is ClassDeclarationSyntax clDocNote)
             {
                 var members = clDocNote.Members;
@@ -117,7 +118,7 @@ internal class DocumentationAttributeHandling
                     {
                         var subNotes = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name + "Attribute" == nameof(NoteDocumentationAttribute));
                         foreach (var subNote in subNotes) 
-                            HandleDocumentation(subNote, str, AttributeType.Note);
+                            HandleDocumentation(subNote, umlStr, docStr, AttributeType.Note);
                     }
                 }
             }
@@ -131,49 +132,40 @@ internal class DocumentationAttributeHandling
                     {
                         var subNotes = member.AttributeLists.SelectMany(x => x.Attributes).Where(x => x.Name + "Attribute" == nameof(NoteDocumentationAttribute));
                         foreach (var subNote in subNotes) 
-                            HandleDocumentation(subNote, str, AttributeType.Note);
+                            HandleDocumentation(subNote, umlStr, docStr, AttributeType.Note);
                     }
                 }
             }
+            docStr.AppendLine("");
         }
-        str.AppendLine("@enduml");
-        File.WriteAllText(filename, str.ToString());
+        umlStr.AppendLine("@enduml");
+        File.WriteAllText(docFileName, docStr.ToString());
+        File.WriteAllText(filename, umlStr.ToString()); // TODO: had a lot of cmd windows pop up and disappear "C:\Program Files\Common Files\Oracle\Java\javapath\java.exe" as name. Not sure why
+        // Removed the obj and bin folders, cleared, closed and reopen the project and it stopped. It has not reappeared yet. Note sure what happened. Outcommented the code below first, before removing folders and that.
 
-        var proc = new ProcessStartInfo("java", @$" -jar {Environment.CurrentDirectory}\\DocumentationSourceGenerator\\plantuml.jar {filename}");
-        Process.Start(proc);
-        Process cmd = new Process();
-        cmd.StartInfo.FileName = "java";
-        cmd.StartInfo.Arguments = @$" -jar {Environment.CurrentDirectory}\\DocumentationSourceGenerator\\plantuml.jar {filename}";
-        //cmd.StartInfo.RedirectStandardInput = true;
-        //cmd.StartInfo.RedirectStandardOutput = true;
-        //cmd.StartInfo.CreateNoWindow = true;
-        cmd.StartInfo.UseShellExecute = false;
-        cmd.Start();
-
-        //cmd.StandardInput.WriteLine(" -jar " + Environment.CurrentDirectory + "\\DocumentationSourceGenerator\\plantuml.jar " + filename);
-        //cmd.StandardInput.Flush();
-        //cmd.StandardInput.Close();
-        //cmd.WaitForExit();
     }
 
-    private void HandleDocumentation(AttributeSyntax attribute, StringBuilder str, AttributeType type)
+    private void HandleDocumentation(AttributeSyntax attribute, StringBuilder strUml, StringBuilder strDoc, AttributeType type)
     {
         var data = attribute.ArgumentList.Arguments.ToArray();
         switch (type)
         {
             case AttributeType.Container:
                 //str.AppendLine("T: " + data[0] + " - " + data[1]);
-                str.AppendLine(data[0].ToString());
+                strDoc.AppendLine($"{data[0]} - {data[1]}".Replace("\"", ""));
+                strUml.AppendLine(data[0].ToString());
                 break;
 
             case AttributeType.Field:
                 //str.AppendLine("F:  " + data[0] + " - " + data[1] + " - " + data[2]);
-                str.AppendLine("{field} " + data[0] + " : " + data[2]);
+                strDoc.AppendLine($"Field: {data[0]} - {data[1]}".Replace("\"", ""));
+                strUml.AppendLine("{field} " + data[0] + " : " + data[2]);
                 break;
 
             case AttributeType.Property:
                 //str.AppendLine("P:  " + data[0] + " - " + data[1] + " - " + data[2]);
-                str.AppendLine("{field} " + data[0] + " : " + data[2]);
+                strDoc.AppendLine($"Property: {data[0]} - {data[1]}".Replace("\"", ""));
+                strUml.AppendLine("{field} " + data[0] + " : " + data[2]);
                 break;
 
             case AttributeType.Note:
@@ -181,20 +173,20 @@ internal class DocumentationAttributeHandling
                 i++;
                 if (data.Length == 3)
                 {
-                    str.AppendLine($"note right of {data[1]}::{data[2]}".Replace("\"",""));
-                    str.AppendLine($" {data[0]}\n end note");
+                    strUml.AppendLine($"note right of {data[1]}::{data[2]}".Replace("\"",""));
+                    strUml.AppendLine($" {data[0]}\n end note");
                 }
                 else if (data.Length == 2 && data[1].ToString() != "1")
                 {
-                    str.AppendLine("note " + data[0] + " as N" + i);
-                    str.AppendLine($"N{i} .. {data[1]}");
+                    strUml.AppendLine("note " + data[0] + " as N" + i);
+                    strUml.AppendLine($"N{i} .. {data[1]}");
                 }
                 
                 break;
 
             case AttributeType.Relation:
                 //str.AppendLine("R: " + data[0] + " <-> " + data[1]);
-                str.AppendLine(data[0] + " --> " + data[1]);
+                strUml.AppendLine(data[0] + " --> " + data[1]);
                 break;
 
             default: break;
