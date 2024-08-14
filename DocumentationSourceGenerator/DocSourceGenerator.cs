@@ -8,6 +8,7 @@ using System.Text;
 using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Documentation.DocumentationAttributes.UML;
 
 namespace DocumentationSourceGenerator 
 {
@@ -62,9 +63,8 @@ internal class DocumentationAttributeHandling
     private int i;
     public void Test(IEnumerable<BaseTypeDeclarationSyntax> types, string filename, string docFileName)
     {
-        StringBuilder umlStr = new StringBuilder("@startuml\n");
-        StringBuilder docStr = new StringBuilder();
-        //var types = assembly.DefinedTypes;
+        StringBuilder umlStr = new("@startuml\n");
+        StringBuilder docStr = new();
         var documentations = types.Where(x => x.AttributeLists.Any(xx => xx.Attributes.Any(xxx => xxx.Name.ToString() + "Attribute" == nameof(ContainerDocumentationAttribute))));
         foreach (var documentation in documentations)
         {
@@ -140,8 +140,7 @@ internal class DocumentationAttributeHandling
         }
         umlStr.AppendLine("@enduml");
         File.WriteAllText(docFileName, docStr.ToString());
-        File.WriteAllText(filename, umlStr.ToString()); // TODO: had a lot of cmd windows pop up and disappear "C:\Program Files\Common Files\Oracle\Java\javapath\java.exe" as name. Not sure why
-        // Removed the obj and bin folders, cleared, closed and reopen the project and it stopped. It has not reappeared yet. Note sure what happened. Outcommented the code below first, before removing folders and that.
+        File.WriteAllText(filename, umlStr.ToString()); 
 
     }
 
@@ -151,25 +150,26 @@ internal class DocumentationAttributeHandling
         switch (type)
         {
             case AttributeType.Container:
-                //str.AppendLine("T: " + data[0] + " - " + data[1]);
                 strDoc.AppendLine($"{data[0]} - {data[1]}".Replace("\"", ""));
                 strUml.AppendLine(data[0].ToString());
                 break;
 
             case AttributeType.Field:
-                //str.AppendLine("F:  " + data[0] + " - " + data[1] + " - " + data[2]);
-                strDoc.AppendLine($"Field: {data[0]} - {data[1]}".Replace("\"", ""));
                 strUml.AppendLine("{field} " + data[0] + " : " + data[2]);
+                if (data[3].ToString() == "FieldEnum.Enum")
+                {
+                    strDoc.AppendLine($"Field: {data[0]} - {data[4]} - {data[1]}".Replace("\"", ""));
+                    break;
+                }
+                strDoc.AppendLine($"Field: {data[0]} - {data[1]}".Replace("\"", ""));
                 break;
 
             case AttributeType.Property:
-                //str.AppendLine("P:  " + data[0] + " - " + data[1] + " - " + data[2]);
                 strDoc.AppendLine($"Property: {data[0]} - {data[1]}".Replace("\"", ""));
                 strUml.AppendLine("{field} " + data[0] + " : " + data[2]);
                 break;
 
             case AttributeType.Note:
-                //str.AppendLine("N: " + data[0]);
                 i++;
                 if (data.Length == 3)
                 {
@@ -185,32 +185,11 @@ internal class DocumentationAttributeHandling
                 break;
 
             case AttributeType.Relation:
-                //str.AppendLine("R: " + data[0] + " <-> " + data[1]);
                 strUml.AppendLine(data[0] + " --> " + data[1]);
                 break;
 
             default: break;
 
         }
-    }
-
-    private void HandleDocumentation(NoteDocumentationAttribute attribute, StringBuilder str)
-    {
-        str.AppendLine("N: " + attribute.Note);
-    }
-
-    private void HandleDocumentation(RelationDocumentationAttribute attribute, StringBuilder str)
-    {
-        str.AppendLine("R: " + attribute.RelatedObject + " <-> " + attribute.Relation);
-    }
-
-    private void HandleDocumentation(ContainerDocumentationAttribute attribute, StringBuilder str)
-    {
-        str.AppendLine("T: " + attribute.ObjectName + " - " + attribute.Information);
-    }
-
-    private void HandleDocumentation(PropertyFieldDocumentationAttribute attribute, StringBuilder str)
-    {
-        str.AppendLine("P:  " + attribute.ObjectName + " - " + attribute.Information + " - " + attribute.Type);
     }
 }

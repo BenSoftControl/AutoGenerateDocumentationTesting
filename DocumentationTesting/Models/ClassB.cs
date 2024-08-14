@@ -1,4 +1,5 @@
 ﻿using Documentation.DocumentationAttributes;
+using Documentation.DocumentationAttributes.UML;
 
 namespace DocumentationTesting.Models;
 
@@ -8,8 +9,8 @@ namespace DocumentationTesting.Models;
 [NoteDocumentation("WIP", "ClassB")]
 internal class ClassB
 {
-    [PropertyFieldDocumentation("As", "This is a collection of As", "IEnumerable<ClassA>")]
+    [PropertyFieldDocumentation("As", "This is a collection of As", "IEnumerable<ClassA>", FieldEnum.Field)]
     public IEnumerable<ClassA> As { get; set; }
-    [PropertyFieldDocumentation("BestEnum","The very best","EnumA")]
+    [PropertyFieldDocumentation("BestEnum","The very best","EnumA", FieldEnum.Field)]
     public EnumA BestEnum { get; set; }
 }
