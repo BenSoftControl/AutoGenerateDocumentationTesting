@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ToDo.txt = ToDo.txt
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocIncrementalGenerator", "DocIncrementalGenerator\DocIncrementalGenerator.csproj", "{0DD049DB-A114-4DC6-9565-6C42F441C582}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{8CC24CC9-5C2C-4B62-A1C0-5DC1957CDB6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CC24CC9-5C2C-4B62-A1C0-5DC1957CDB6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CC24CC9-5C2C-4B62-A1C0-5DC1957CDB6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DD049DB-A114-4DC6-9565-6C42F441C582}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DD049DB-A114-4DC6-9565-6C42F441C582}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DD049DB-A114-4DC6-9565-6C42F441C582}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DD049DB-A114-4DC6-9565-6C42F441C582}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

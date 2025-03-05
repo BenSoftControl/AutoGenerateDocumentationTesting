@@ -14,9 +14,7 @@
 		<ProjectReference Include="..\Documentation\Documentation.csproj" />
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\DocumentationSourceGenerator\DocumentationSourceGenerator.csproj"
-						  OutputItemType="Analyzer"
-						  ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\DocumentationSourceGenerator\DocumentationSourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 </Project>

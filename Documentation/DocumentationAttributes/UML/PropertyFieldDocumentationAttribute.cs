@@ -1,7 +1,6 @@
 ﻿using System;
-using Documentation.DocumentationAttributes.UML;
 
-namespace Documentation.DocumentationAttributes
+namespace Documentation.DocumentationAttributes.UML
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class PropertyFieldDocumentationAttribute : BaseDocumentationAttribute
